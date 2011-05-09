@@ -51,7 +51,7 @@ module SubdomainFu
   def self.subdomain_from(host)
     return nil if host.nil? || /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.match(host)
     parts = host.split('.')
-    sub = parts[0..-(SubdomainFu.tld_size+2)].join(".")
+    sub = SubdomainFu.tld_size == :auto ? parts.first : parts[0..-(SubdomainFu.tld_size+2)].join(".")
     sub.blank? ? nil : sub
   end
 
@@ -63,7 +63,7 @@ module SubdomainFu
 
   def self.host_without_subdomain(host)
     parts = host.split('.')
-    parts[-(SubdomainFu.tld_size+1)..-1].join(".")
+    SubdomainFu.tld_size == :auto ? parts.shift && parts.join('.'): parts[-(SubdomainFu.tld_size+1)..-1].join(".")
   end
 
   # Rewrites the subdomain of the host unless they are equivalent (i.e. mirrors of each other)
@@ -129,7 +129,7 @@ module SubdomainFu
   end
 
   def self.current_subdomain(request)
-    subdomain = request.subdomains(SubdomainFu.tld_size).join(".")
+    subdomain = SubdomainFu.tld_size == :auto ? request.subdomains.first : request.subdomains(SubdomainFu.tld_size).join(".")
     if has_subdomain?(subdomain)
       subdomain
     else
